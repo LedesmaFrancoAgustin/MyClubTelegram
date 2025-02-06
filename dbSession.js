@@ -5,9 +5,10 @@ import MongoStore from 'connect-mongo';
 export const sessionConfig = (app) => {
   // URL de conexión a MongoDB (puedes poner tu propia URL aquí)
   const mongoURI = process.env.MONGO_URI; // o tu URL de MongoDB Atlas
+  const keySession = process.env.KEY_SESSION; // o tu URL de MongoDB Atlas
 
   app.use(session({
-    secret: 'mi-secreto', // Cambiar por un valor seguro
+    secret: keySession, // Cambiar por un valor seguro
     resave: false,
     saveUninitialized: true,
     store: MongoStore.create({
