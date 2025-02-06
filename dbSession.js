@@ -1,18 +1,36 @@
-// dbSeccion.js
-import session from 'express-session';
-import MongoStore from 'connect-mongo';
+import session from "express-session";
+import MongoStore from "connect-mongo";
+import dotenv from "dotenv";
+
+dotenv.config(); // Cargar las variables de entorno
 
 export const sessionConfig = (app) => {
-  // URL de conexión a MongoDB (puedes poner tu propia URL aquí)
-  const mongoURI = process.env.MONGO_URI; // o tu URL de MongoDB Atlas
+  const mongoUrl = process.env.MONGO_URI; // Cambiar mongoURI a mongoUrl
+  const keySession = process.env.KEY_SESSION;
 
-  app.use(session({
-    secret: 'mi-secreto', // Cambiar por un valor seguro
-    resave: false,
-    saveUninitialized: true,
-    store: MongoStore.create({
-        mongoURI, // Utilizamos la URL de la base de datos aquí
-      ttl: 14 * 24 * 60 * 60, // Tiempo de vida de la sesión en segundos (14 días)
+  if (!mongoUrl) {
+    throw new Error(
+      "❌ Error: La variable de entorno MONGO_URI no está definida.",
+    );
+  }
+
+  if (!keySession) {
+    throw new Error(
+      "❌ Error: La variable de entorno KEY_SESSION no está definida.",
+    );
+  }
+
+  app.use(
+    session({
+      secret: keySession, // Cambiar por un valor seguro
+      resave: false,
+      saveUninitialized: true,
+      store: MongoStore.create({
+        mongoUrl, // Ahora está correctamente escrito
+        ttl: 14 * 24 * 60 * 60, // 14 días en segundos
+      }),
     }),
-  }));
+  );
+
+  console.log("✅ Sesión configurada correctamente.");
 };
