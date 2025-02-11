@@ -42,4 +42,4 @@ startCommand(bot);
 // Configuración de los comandos de callback
 callbackHandler(bot);
 
-bot.launch();
+
