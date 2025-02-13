@@ -6,6 +6,7 @@ const interestedUserSchema = new mongoose.Schema({
     ref: "accountsChatId",
     required: true,
   },
+  verifyPass: { type: Boolean, default: false },
   sector: { type: [String], required: true, default: [] }, // Ahora es un array de strings
 });
 
