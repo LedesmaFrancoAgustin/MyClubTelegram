@@ -131,3 +131,41 @@ export const handleSectorCallback = async (ctx) => {
     );
   }
 };
+
+export const handleConfirmPass = async (ctx) => {
+  try {
+    const matchId = ctx.session.selectedMatchId;
+    const email = ctx.session.email;
+    if (!matchId || !email) {
+      return ctx.reply("No se encontró la información necesaria para confirmar.");
+    }
+
+    const match = await Match.findById(matchId);
+    if (!match) {
+      return ctx.reply("No se encontró el partido seleccionado.");
+    }
+
+    const account = await accountsModel.findOne({ email: email });
+    if (!account) {
+      return ctx.reply("No se encontró la cuenta asociada al correo electrónico.");
+    }
+
+    const accountId = account._id;
+    let userEntry = match.interestedUsers.find(
+      (entry) => entry.accountId.toString() === accountId.toString()
+    );
+
+    if (userEntry) {
+      await Match.updateOne(
+        { _id: matchId, "interestedUsers.accountId": accountId },
+        { $set: { "interestedUsers.$.verifyPass": true } }
+      );
+      ctx.reply("✅ Has confirmado tu pase para el partido.");
+    } else {
+      ctx.reply("No estás registrado como interesado en este partido.");
+    }
+  } catch (error) {
+    console.error("Error al confirmar pase:", error);
+    ctx.reply("Ocurrió un error al confirmar tu pase. Inténtalo de nuevo más tarde.");
+  }
+};

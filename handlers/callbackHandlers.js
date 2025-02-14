@@ -6,6 +6,7 @@ import {
 import {
   handleSectorSelection,
   handleSectorCallback,
+  handleConfirmPass
 } from "../handlers/selectionMatchHandlers.js"; // Importamos las funciones relacionadas con partidos y sectores
 import { isSessionValid, logout } from "../handlers/accessHandlers.js";
 
@@ -87,6 +88,11 @@ export const callbackHandler = (bot) => {
           );
         }
 
+        break;
+        case callbackData.startsWith("confirmar_") && callbackData:
+          const matchId = callbackData.split("_")[1]; // Extrae el ID del partido
+          ctx.session.selectedMatchId = matchId; // Guarda el ID en la sesión
+          await handleConfirmPass(ctx);
         break;
       default:
         ctx.reply("Comando no reconocido");
