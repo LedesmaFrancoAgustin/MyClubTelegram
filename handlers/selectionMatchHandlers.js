@@ -26,7 +26,7 @@ export const handlePassMatch = async (ctx) => {
         const partidoDate = match.date;
         return [
           {
-            text: `${match.vs} - ${partidoDate} - ${match.competition}`,
+            text: `${match.vs} - ${partidoDate}`,
             callback_data: `match_${match._id}`, // Usamos el _id del partido para identificarlo
           },
         ];

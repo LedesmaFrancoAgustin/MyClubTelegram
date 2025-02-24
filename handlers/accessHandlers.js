@@ -38,7 +38,7 @@ export const registerScene = new Scenes.WizardScene(
     try {
       const password = ctx.message.text;
       const newUser = new accountsModel({
-        email: ctx.wizard.state.email,
+        email: ctx.wizard.state.email.toLowerCase(), // Convertir a minúsculas
         password: password, // Considera encriptar la contraseña
         chatId: ctx.chat.id,
       });
@@ -81,7 +81,7 @@ export const loginScene = new Scenes.WizardScene(
   },
   async (ctx) => {
     try {
-      const email = ctx.wizard.state.email;
+      const email = ctx.wizard.state.email.toLowerCase(); // Convertir a minúsculas
       const password = ctx.message.text;
       const user = await accountsModel.findOne({ email, password });
 
