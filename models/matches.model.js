@@ -12,7 +12,7 @@ const interestedUserSchema = new mongoose.Schema({
 
 const matchSchema = new mongoose.Schema({
   vs: { type: String, required: true },
-  date: { type: Date, required: true },
+  date: { type: String, required: true },
   competition: { type: String, required: true },
   enabled: { type: Boolean, default: true },
   interestedUsers: { type: [interestedUserSchema], default: [] }, // Ahora es un array de objetos

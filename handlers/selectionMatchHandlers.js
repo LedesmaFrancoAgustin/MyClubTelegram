@@ -23,7 +23,7 @@ export const handlePassMatch = async (ctx) => {
     } else {
       // Crear el arreglo de botones inline para los partidos
       const buttons = matches.map((match) => {
-        const partidoDate = new Date(match.date).toLocaleString();
+        const partidoDate = match.date;
         return [
           {
             text: `${match.vs} - ${partidoDate} - ${match.competition}`,
@@ -108,7 +108,7 @@ export const handleSectorCallback = async (ctx) => {
           { $addToSet: { "interestedUsers.$.sector": sector } },
         );
         ctx.reply(
-          `Has seleccionado el sector "${sector}" para el partido ${match.vs} el ${new Date(match.date).toLocaleString()}.`,
+          `Has seleccionado el sector "${sector}" para el partido ${match.vs} el ${match.date}.`,
         );
       } else {
         ctx.reply(
@@ -121,7 +121,7 @@ export const handleSectorCallback = async (ctx) => {
         { $push: { interestedUsers: { accountId, sector: [sector] } } },
       );
       ctx.reply(
-        `Has seleccionado el sector "${sector}" para el partido ${match.vs} el ${new Date(match.date).toLocaleString()}.`,
+        `Has seleccionado el sector "${sector}" para el partido ${match.vs} el ${match.date}.`,
       );
     }
   } catch (error) {
@@ -137,12 +137,12 @@ export const handleConfirmPass = async (ctx) => {
     const matchId = ctx.session.selectedMatchId;
     const email = ctx.session.email;
     if (!matchId || !email) {
-      return ctx.reply("No se encontró la información necesaria para confirmar.");
+      return ctx.reply("Inicia session para completar la confirmacion");
     }
 
     const match = await Match.findById(matchId);
     if (!match) {
-      return ctx.reply("No se encontró el partido seleccionado.");
+      return ctx.reply("No se encontró la información necesaria para confirmar.");
     }
 
     const account = await accountsModel.findOne({ email: email });
@@ -160,7 +160,7 @@ export const handleConfirmPass = async (ctx) => {
         { _id: matchId, "interestedUsers.accountId": accountId },
         { $set: { "interestedUsers.$.verifyPass": true } }
       );
-      ctx.reply("✅ Has confirmado tu pase para el partido.");
+      ctx.reply("✅ Has confirmado tu pass fue adquirido con exito.");
     } else {
       ctx.reply("No estás registrado como interesado en este partido.");
     }
