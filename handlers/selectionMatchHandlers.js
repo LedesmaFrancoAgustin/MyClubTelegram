@@ -1,5 +1,6 @@
 import Match from "../models/matches.model.js"; // Importamos el modelo de Match
 import accountsModel from "../models/accounts.model.js"; // Importamos el modelo de Accounts
+import SessionCookie from "../models/sessionCookies.model.js";
 
 // Arreglo de sectores disponibles
 const sectores = [
@@ -167,5 +168,35 @@ export const handleConfirmPass = async (ctx) => {
   } catch (error) {
     console.error("Error al confirmar pase:", error);
     ctx.reply("Ocurrió un error al confirmar tu pase. Inténtalo de nuevo más tarde.");
+  }
+};
+
+
+export const handleBuyPass = async (ctx) => {
+  try {
+    const userEmail = ctx.session.email || ctx.from.username || ctx.from.id;
+    const userSession = await SessionCookie.findOne({ email: userEmail });
+
+    if (!userSession) {
+      return ctx.reply("⚠️ No se encontraron datos de sesión guardados.");
+    }
+
+    const sessionData = {
+      localStorage: userSession.localStorage || {},
+      sessionStorage: userSession.sessionStorage || {},
+    };
+
+    const url = `https://my-club-telegram.vercel.app/open-page?session=${encodeURIComponent(
+      JSON.stringify(sessionData)
+    )}`;
+
+    await ctx.reply("✅ Tu sesión ha sido restaurada. Presiona el botón para continuar:", {
+      reply_markup: {
+        inline_keyboard: [[{ text: "🛒 Abrir Página", url }]],
+      },
+    });
+  } catch (error) {
+    console.error("❌ Error al recuperar datos de sesión:", error);
+    await ctx.reply("⚠️ Ocurrió un error al procesar la compra.");
   }
 };
