@@ -188,7 +188,7 @@ export const handleBuyPass = async (ctx) => {
     };
 
     const sessionString = encodeURIComponent(JSON.stringify(sessionData));
-    const url = `https://my-club-telegram.vercel.app/open-page?session=${sessionString}`;
+    const url = `https://my-club-telegram.vercel.app/api/open-page?session=${sessionString}`;
 
     console.log("🔗 URL generada:", url); // Verificar que la URL se genera correctamente
 
