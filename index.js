@@ -8,6 +8,9 @@ import { callbackHandler } from "./handlers/callbackHandlers.js";
 import { registerScene, loginScene } from "./handlers/accessHandlers.js"; // Ajusta la ru
 import { initMongoDB } from "./db.js"; // Conexión a MongoDB
 
+import openPageRouter from "./routes/openPage.route.js";
+
+
 const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN;
 const WEBHOOK_URL = process.env.WEBHOOK_URL;
 const PORT = process.env.PORT || 3000;
@@ -33,6 +36,7 @@ initMongoDB();
 
 bot.telegram.setWebhook(WEBHOOK_URL);
 app.use(bot.webhookCallback("/"));
+app.use(openPageRouter);
 
 app.listen(PORT, () => {
   //console.log(`Bot corriendo en puerto ${PORT}`);

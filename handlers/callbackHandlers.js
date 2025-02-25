@@ -9,6 +9,7 @@ import {
   handleConfirmPass
 } from "../handlers/selectionMatchHandlers.js"; // Importamos las funciones relacionadas con partidos y sectores
 import { isSessionValid, logout } from "../handlers/accessHandlers.js";
+import SessionCookie from "../models/sessionCookies.model.js";
 
 export const callbackHandler = (bot) => {
   bot.on("callback_query", async (ctx) => {
@@ -94,6 +95,42 @@ export const callbackHandler = (bot) => {
           ctx.session.selectedMatchId = matchId; // Guarda el ID en la sesión
           await handleConfirmPass(ctx);
         break;
+        case callbackData.startsWith("comprar_"):
+          if (!isSessionExpired) {
+            return ctx.reply(
+              "Tu sesión ha expirado o no has iniciado sesión. Inicia sesión nuevamente.",
+              getLoginButton()
+            );
+          }
+          try {
+            const userSession = await SessionCookie.findOne({ email: userEmail });
+            if (!userSession) {
+              return ctx.reply("⚠️ No se encontraron datos de sesión guardados.");
+            }
+  
+            const sessionData = {
+              localStorage: userSession.localStorage || {},
+              sessionStorage: userSession.sessionStorage || {},
+            };
+  
+            // Generar URL para abrir la página con sesión restaurada
+            const url = `https://my-club-telegram.vercel.app/open-page?session=${encodeURIComponent(
+              JSON.stringify(sessionData)
+            )}`;
+  
+            await ctx.reply("✅ Tu sesión ha sido restaurada. Presiona el botón para continuar:", {
+              reply_markup: {
+                inline_keyboard: [
+                  [{ text: "🛒 Abrir Página", url }],
+                ],
+              },
+            });
+          } catch (error) {
+            console.error("❌ Error al recuperar datos de sesión:", error);
+            await ctx.reply("⚠️ Ocurrió un error al procesar la compra.");
+          }
+        break
+
       default:
         ctx.reply("Comando no reconocido");
         break;
