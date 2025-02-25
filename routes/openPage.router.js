@@ -1,6 +1,6 @@
 import express from "express";
 import puppeteer from "puppeteer";
-import SessionCookie from "../models/SessionCookie.js";
+import SessionCookie from "../models/sessionCookies.model.js";
 
 const router = express.Router();
 
