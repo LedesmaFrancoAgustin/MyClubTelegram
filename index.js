@@ -35,7 +35,7 @@ initMongoDB();
 
 bot.telegram.setWebhook(WEBHOOK_URL);
 app.use(bot.webhookCallback("/"));
-//app.use("/api", openPageRouter);
+app.use("/", openPageRouter);
 
 
 app.listen(PORT, () => {
