@@ -98,12 +98,7 @@ export const callbackHandler = (bot) => {
           await handleBuyPass(ctx);
         break;
         case callbackData.startsWith("comprar_"):
-          if (!isSessionExpired) {
-            return ctx.reply(
-              "Tu sesión ha expirado o no has iniciado sesión. Inicia sesión nuevamente.",
-              getLoginButton()
-            );
-          }
+         
           await handleBuyPass(ctx);
         break
 

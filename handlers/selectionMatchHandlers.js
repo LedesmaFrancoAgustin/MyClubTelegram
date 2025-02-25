@@ -173,6 +173,7 @@ export const handleConfirmPass = async (ctx) => {
 
 
 export const handleBuyPass = async (ctx) => {
+ 
   try {
     const userEmail = ctx.session.email || ctx.from.username || ctx.from.id;
     const userSession = await SessionCookie.findOne({ email: userEmail });
@@ -186,9 +187,10 @@ export const handleBuyPass = async (ctx) => {
       sessionStorage: userSession.sessionStorage || {},
     };
 
-    const url = `https://my-club-telegram.vercel.app/open-page?session=${encodeURIComponent(
-      JSON.stringify(sessionData)
-    )}`;
+    const sessionString = encodeURIComponent(JSON.stringify(sessionData));
+    const url = `https://my-club-telegram.vercel.app/open-page?session=${sessionString}`;
+
+    console.log("🔗 URL generada:", url); // Verificar que la URL se genera correctamente
 
     await ctx.reply("✅ Tu sesión ha sido restaurada. Presiona el botón para continuar:", {
       reply_markup: {
