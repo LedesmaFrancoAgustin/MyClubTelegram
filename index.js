@@ -8,7 +8,7 @@ import { callbackHandler } from "./handlers/callbackHandlers.js";
 import { registerScene, loginScene } from "./handlers/accessHandlers.js"; // Ajusta la ru
 import { initMongoDB } from "./db.js"; // Conexión a MongoDB
 
-import {openPageRouter} from "./router/openPage.route.js";
+import openPageRouter from "./router/openPage.route.js";
 
 const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN;
 const WEBHOOK_URL = process.env.WEBHOOK_URL;
