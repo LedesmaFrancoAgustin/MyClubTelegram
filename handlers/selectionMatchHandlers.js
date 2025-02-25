@@ -176,12 +176,6 @@ export const handleConfirmPass = async (ctx) => {
 
 
 export const handleBuyPass = async (ctx) => {
-  if (!isSessionValid(ctx)) {
-    return ctx.reply(
-      "Tu sesión ha expirado o no has iniciado sesión. Inicia sesión nuevamente.",
-      getLoginButton()
-    );
-  }
 
   try {
     const userEmail = ctx.session.email || ctx.from.username || ctx.from.id;
@@ -206,7 +200,7 @@ export const handleBuyPass = async (ctx) => {
     const { sessionId } = await response.json();
 
     // Generamos la URL usando el sessionId
-    const url = `https://my-club-telegram.vercel.app/open-page/${sessionId}`;
+    const url = `https://my-club-telegram.vercel.app/api/open-page/${sessionId}`;
 
     // Enviamos el botón con la URL al usuario
     await ctx.reply("✅ Tu sesión ha sido restaurada. Presiona el botón para continuar:", {
