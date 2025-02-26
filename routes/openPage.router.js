@@ -4,12 +4,13 @@ import SessionCookie from "../models/sessionCookies.model.js";
 
 const router = express.Router();
 
-router.get("/open-page/:sessionId", async (req, res) => {
+// Ruta para abrir la página con la sesión restaurada
+router.get("/open-page/:email", async (req, res) => {
   try {
-    const { sessionId } = req.params;
+    const { email } = req.params;
 
-    // 🔍 Buscar la sesión en la base de datos usando el sessionId
-    const userSession = await SessionCookie.findOne({ _id: sessionId });
+    // 🔍 Buscar la sesión en la base de datos usando el email
+    const userSession = await SessionCookie.findOne({ email });
 
     if (!userSession) {
       return res.status(404).json({ message: "⚠️ No se encontró la sesión." });
@@ -18,23 +19,6 @@ router.get("/open-page/:sessionId", async (req, res) => {
     // 🚀 Iniciar Puppeteer en modo headless
     const browser = await puppeteer.launch({ headless: false });
     const page = await browser.newPage();
-
-    // 📌 Restaurar cookies en el navegador
-    if (userSession.cookies) {
-      const cookiesArray = Object.keys(userSession.cookies).map(name => ({
-        name,
-        value: userSession.cookies[name],
-        domain: '.bocajuniors.com.ar',
-        path: '/',
-        httpOnly: false,
-        secure: true,
-        sameSite: 'None'
-      }));
-      await page.setCookie(...cookiesArray);
-    }
-
-    // 🌐 Navegar a la página de Boca Socios
-    await page.goto("https://bocasocios.bocajuniors.com.ar", { waitUntil: "networkidle2" });
 
     // 📌 Restaurar localStorage
     if (userSession.localStorage) {
@@ -52,12 +36,14 @@ router.get("/open-page/:sessionId", async (req, res) => {
       }, userSession.sessionStorage);
     }
 
+    // 🌐 Navegar a la página de Boca Socios
+    await page.goto("https://bocasocios.bocajuniors.com.ar", { waitUntil: "networkidle2" });
+
     // 🔄 Recargar la página para aplicar los cambios
     await page.reload({ waitUntil: "networkidle2" });
 
     console.log("✅ Página abierta con sesión restaurada y fila virtual evitada.");
     res.json({ message: "✅ Página abierta con sesión restaurada y fila virtual evitada." });
-
   } catch (error) {
     console.error("❌ Error al abrir la página:", error);
     res.status(500).json({ message: "⚠️ Error al abrir la página" });
