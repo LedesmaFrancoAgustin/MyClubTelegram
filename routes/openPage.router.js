@@ -5,7 +5,7 @@ import SessionCookie from "../models/sessionCookies.model.js";
 
 const router = express.Router();
 
-router.get('/api/open-socio', async (req, res) => {
+router.get('/open-socio', async (req, res) => {
   try {
       const browser = await puppeteer.launch({
           args: chromium.args,
