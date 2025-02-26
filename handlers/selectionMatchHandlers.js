@@ -180,7 +180,7 @@ export const handleBuyPass = async (ctx) => {
   try {
     const userEmail = ctx.session.email;
 
-    if (!userSession) {
+    if (!userEmail) {
       return ctx.reply("⚠️ No se encontraron datos de sesión guardados.");
     }
     // Generamos la URL usando el sessionId
