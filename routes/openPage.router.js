@@ -1,6 +1,6 @@
 import express from "express";
 import puppeteer from "puppeteer-core";
-import chromium from "chrome-aws-lambda";
+import chromium from "@sparticuz/chromium";
 import SessionCookie from "../models/sessionCookies.model.js";
 
 const router = express.Router();
@@ -16,11 +16,11 @@ router.get("/open-page/:email", async (req, res) => {
       return res.status(404).json({ message: "⚠️ No se encontró la sesión." });
     }
 
-    // 🚀 Iniciar Puppeteer en modo headless con configuración para Vercel
+    // 🚀 Iniciar Puppeteer con configuración para Vercel
     const browser = await puppeteer.launch({
       args: chromium.args,
       defaultViewport: chromium.defaultViewport,
-      executablePath: await chromium.executablePath || "/usr/bin/google-chrome-stable",
+      executablePath: await chromium.executablePath(),
       headless: chromium.headless,
     });
 
@@ -50,7 +50,7 @@ router.get("/open-page/:email", async (req, res) => {
 
     console.log("✅ Página abierta con sesión restaurada y fila virtual evitada.");
     
-    // Cierra el navegador después de usarlo en un entorno serverless
+    // Cierra el navegador después de usarlo
     await browser.close();
 
     res.json({ message: "✅ Página abierta con sesión restaurada y fila virtual evitada." });
