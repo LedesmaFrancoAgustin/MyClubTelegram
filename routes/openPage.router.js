@@ -8,20 +8,15 @@ const router = express.Router();
 router.get('/open-socio', async (req, res) => {
   try {
       const browser = await puppeteer.launch({
-          args: chromium.args,
-          executablePath: await chromium.executablePath(),
-          headless: chromium.headless,
-      });
+        args: chromium.args,
+        executablePath: await chromium.executablePath(),
+        headless: false,  // Ver la ejecución en una ventana
+    });
+  
 
       const page = await browser.newPage();
-      await page.goto('https://soysocio.bocajuniors.com.ar/login');
+      await page.goto('https://bocasocios.bocajuniors.com.ar/auth/login');
 
-      await page.type('#email', 'usuario@example.com');
-      await page.type('#password', '1234');
-      await page.click('button[type="submit"]');
-
-      await page.waitForNavigation();
-      await page.goto('https://soysocio.bocajuniors.com.ar/');
 
       res.send('Sesión iniciada en SoySocio');
   } catch (error) {
