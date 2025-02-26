@@ -6,24 +6,28 @@ import SessionCookie from "../models/sessionCookies.model.js";
 const router = express.Router();
 
 app.get('/api/open-socio', async (req, res) => {
-  const browser = await puppeteer.launch({ headless: false });
-  const page = await browser.newPage();
+  try {
+      const browser = await puppeteer.launch({
+          args: chromium.args,
+          executablePath: await chromium.executablePath(),
+          headless: chromium.headless,
+      });
 
-  // Ir a la página de login
-  await page.goto('https://soysocio.bocajuniors.com.ar/login');
+      const page = await browser.newPage();
+      await page.goto('https://soysocio.bocajuniors.com.ar/login');
 
-  // Completar formulario
-  await page.type('#email', 'usuario@example.com');
-  await page.type('#password', '1234');
-  await page.click('button[type="submit"]');
+      await page.type('#email', 'usuario@example.com');
+      await page.type('#password', '1234');
+      await page.click('button[type="submit"]');
 
-  // Esperar a que inicie sesión
-  await page.waitForNavigation();
+      await page.waitForNavigation();
+      await page.goto('https://soysocio.bocajuniors.com.ar/');
 
-  // Redirigir a la página principal
-  await page.goto('https://soysocio.bocajuniors.com.ar/');
-
-  res.send('Sesión iniciada en SoySocio');
+      res.send('Sesión iniciada en SoySocio');
+  } catch (error) {
+      console.error('Error al iniciar sesión:', error);
+      res.status(500).send('Error al abrir la página');
+  }
 });
 /*
 router.get("/open-page/:email", async (req, res) => {
