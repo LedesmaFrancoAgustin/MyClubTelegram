@@ -27,11 +27,11 @@ router.get('/open-socio', async (req, res) => {
     console.log("✅ Datos de sesión encontrados:", sessionData);
 
     const browser = await puppeteer.launch({
-      args: [...chromium.args, "--no-sandbox", "--disable-setuid-sandbox"], // ⚡ Evita restricciones
+      args: chromium.args,
       executablePath: await chromium.executablePath(),
-      headless: true, // 🏎 En Vercel debe ser headless
-      timeout: 0 // ❌ Evita que se cierre antes de cargar
+      headless: chromium.headless
   });
+  
   
 
     console.log("✅ Navegador iniciado");
@@ -45,20 +45,17 @@ router.get('/open-socio', async (req, res) => {
 
     console.log("🔹 Página de login cargada");
 
-    // Inyectar datos en el almacenamiento
     await page.evaluate((localData, sessionData) => {
-      console.log("📌 Inyectando localStorage...");
+      // Restaurar localStorage
       Object.keys(localData).forEach(key => {
-        localStorage.setItem(key, localData[key]);
+          localStorage.setItem(key, localData[key]);
       });
-
-      console.log("📌 Inyectando sessionStorage...");
+  
+      // Restaurar sessionStorage
       Object.keys(sessionData).forEach(key => {
-        sessionStorage.setItem(key, sessionData[key]);
+          sessionStorage.setItem(key, sessionData[key]);
       });
-
-      console.log("✅ Datos de sesión inyectados en el navegador");
-    }, sessionData.localStorage, sessionData.sessionStorage);
+  }, session.localStorage, session.sessionStorage);
 
    
 
