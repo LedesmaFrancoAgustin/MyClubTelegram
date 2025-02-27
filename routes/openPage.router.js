@@ -1,12 +1,12 @@
 import express from "express";
 import mongoose from "mongoose";
-import SessionCookie from "./sessionCookieModel"; // Importar el modelo de sesión
+import SessionCookie from "../models/sessionCookies.model.js"; // Importar el modelo de sesión
 
 const router = express.Router();
 
 router.get('/open-socio', async (req, res) => {
   try {
-    const email = req.query.email; // Obtener email desde la consulta
+    const email = "ledesma-agustin@hotmail.com"; // Obtener email desde la consulta
     if (!email) {
       return res.status(400).send("Email es requerido");
     }
