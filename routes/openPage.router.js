@@ -14,27 +14,37 @@ router.get("/redirect-boca", async (req, res) => {
           return res.status(403).send("No hay sesión guardada.");
       }
 
-      // Página intermedia para restaurar localStorage y sessionStorage antes de redirigir
+      // Extraer datos de localStorage y sessionStorage
+      const localStorageData = session.localStorage['boca-secure-storage\\authStore'] || null;
+      const sessionStorageData = session.sessionStorage._cltk || null;
+
+      // Página intermedia para restaurar almacenamiento antes de redirigir
       res.send(`
           <html>
           <head>
               <script>
                   try {
-                      // Restaurar localStorage
-                      localStorage.setItem('boca-secure-storage\\\\authStore', JSON.stringify(${JSON.stringify(session.localStorage)}));
+                      console.log("Restaurando sesión...");
+                      
+                      // Restaurar localStorage si hay datos guardados
+                      if (${JSON.stringify(localStorageData)} !== null) {
+                          localStorage.setItem('boca-secure-storage\\\\authStore', ${JSON.stringify(localStorageData)});
+                      }
 
-                      // Restaurar sessionStorage
-                      sessionStorage.setItem('_cltk', '${session.sessionStorage._cltk}');
+                      // Restaurar sessionStorage si hay datos guardados
+                      if (${JSON.stringify(sessionStorageData)} !== null) {
+                          sessionStorage.setItem('_cltk', ${JSON.stringify(sessionStorageData)});
+                      }
 
                       console.log("Sesión restaurada, redirigiendo...");
+
+                      // Esperar un momento antes de redirigir para asegurar que los datos se guarden
+                      setTimeout(() => {
+                          window.location.href = "https://bocasocios.bocajuniors.com.ar/auth/login";
+                      }, 1000);
                   } catch (error) {
                       console.error("Error restaurando sesión:", error);
                   }
-
-                  // Esperar un segundo antes de redirigir
-                  setTimeout(() => {
-                      window.location.href = "https://bocasocios.bocajuniors.com.ar/auth/login";
-                  }, 1000);
               </script>
           </head>
           <body>
