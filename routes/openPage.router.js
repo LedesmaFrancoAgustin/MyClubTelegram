@@ -26,23 +26,22 @@ router.get('/open-socio', async (req, res) => {
 
     console.log("✅ Datos de sesión encontrados:", sessionData);
 
-    console.log("🔹 Iniciando Puppeteer...");
     const browser = await puppeteer.launch({
-      args: chromium.args,
+      args: [...chromium.args, "--no-sandbox", "--disable-setuid-sandbox"], // ⚡ Evita restricciones
       executablePath: await chromium.executablePath(),
-      headless: false,  // 👈 Asegura que esté en `false`
-      defaultViewport: null,  // 👈 Para que use el tamaño normal de pantalla
-      devtools: true  // 👈 Abre las herramientas de desarrollo
+      headless: true, // 🏎 En Vercel debe ser headless
+      timeout: 0 // ❌ Evita que se cierre antes de cargar
   });
   
 
     console.log("✅ Navegador iniciado");
     const page = await browser.newPage();
-    await page.goto("https://bocasocios.bocajuniors.com.ar/auth/login", { waitUntil: "networkidle2" });
+    await page.goto("https://bocasocios.bocajuniors.com.ar/auth/login", {
+      waitUntil: "domcontentloaded", // ⚡ Carga más rápido
+      timeout: 10000 // ⏳ Evita bloqueos largos
+  });
 
-    console.log("⏳ Esperando 10 segundos para ver si se abre el navegador...");
-    await new Promise(resolve => setTimeout(resolve, 10000));
-
+  
 
     console.log("🔹 Página de login cargada");
 
