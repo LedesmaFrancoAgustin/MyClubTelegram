@@ -38,7 +38,8 @@ router.get('/open-socio', async (req, res) => {
     const page = await browser.newPage();
     await page.goto("https://bocasocios.bocajuniors.com.ar/auth/login", {
       waitUntil: "domcontentloaded", // ⚡ Carga más rápido
-      timeout: 10000 // ⏳ Evita bloqueos largos
+      timeout: 10000, // ⏳ Evita bloqueos largos
+      headless: false
   });
 
   
