@@ -43,34 +43,6 @@ router.get('/open-socio', async (req, res) => {
 
   
 
-    console.log("🔹 Página de login cargada");
-
-
-
-    console.log("🔄 Recargando página para aplicar sesión...");
-    await page.reload({ waitUntil: "networkidle2" });
-
-    // Capturar captura de pantalla para depuración
-    await page.screenshot({ path: "screenshot.png" });
-    console.log("📸 Captura de pantalla guardada como 'screenshot.png'");
-
-    // Comprobar si la sesión se inició correctamente
-    const isLoggedIn = await page.evaluate(() => {
-      const userData = localStorage.getItem('boca-secure-storage\\authStore');
-      if (!userData) return false;
-
-      const parsedData = JSON.parse(userData);
-      return parsedData.state?.userDetail?.authToken ? true : false;
-    });
-
-    if (isLoggedIn) {
-      console.log("✅ Sesión iniciada correctamente");
-      res.send("✅ Sesión iniciada correctamente en SoySocio.");
-    } else {
-      console.log("⚠️ La sesión no se inició correctamente");
-      res.status(401).send("⚠️ Error al iniciar sesión, verifique los datos de sesión.");
-    }
-
   } catch (error) {
     console.error("❌ Error al iniciar sesión:", error);
     res.status(500).send("Error al abrir la página");
