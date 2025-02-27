@@ -12,7 +12,6 @@ router.get("/redirect-boca", async (req, res) => {
       return res.status(403).send("No hay sesión guardada.");
   }
 
-  // Inyectar el localStorage como un script en la respuesta
   const script = `
     <script>
       localStorage.setItem('boca-secure-storage\\\\authStore', '${session.localStorage["boca-secure-storage\\authStore"]}');
