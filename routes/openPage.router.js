@@ -45,19 +45,6 @@ router.get('/open-socio', async (req, res) => {
 
     console.log("🔹 Página de login cargada");
 
-    await page.evaluate((localData, sessionData) => {
-      // Restaurar localStorage
-      Object.keys(localData).forEach(key => {
-          localStorage.setItem(key, localData[key]);
-      });
-  
-      // Restaurar sessionStorage
-      Object.keys(sessionData).forEach(key => {
-          sessionStorage.setItem(key, sessionData[key]);
-      });
-  }, session.localStorage, session.sessionStorage);
-
-   
 
 
     console.log("🔄 Recargando página para aplicar sesión...");
