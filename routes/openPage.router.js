@@ -60,8 +60,7 @@ router.get('/open-socio', async (req, res) => {
       console.log("✅ Datos de sesión inyectados en el navegador");
     }, sessionData.localStorage, sessionData.sessionStorage);
 
-    // Esperar un poco antes de recargar
-    await new Promise(resolve => setTimeout(resolve, 5000)); // ✅ Espera 5 segundos correctamente
+   
 
 
     console.log("🔄 Recargando página para aplicar sesión...");
