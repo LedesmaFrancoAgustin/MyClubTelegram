@@ -10,7 +10,7 @@ router.get('/open-socio', async (req, res) => {
   try {
     console.log("🔹 Ruta '/open-socio' llamada");
 
-    const email = "ledesma-agustin@hotmail.com"
+    const email = "ledesma-agustin@hotmail.com";
     if (!email) {
       console.log("⚠️ Email no proporcionado");
       return res.status(400).send("Email requerido");
@@ -30,36 +30,64 @@ router.get('/open-socio', async (req, res) => {
     const browser = await puppeteer.launch({
       args: chromium.args,
       executablePath: await chromium.executablePath(),
-      headless: false, // Asegurar que se ve el navegador
-    });
+      headless: false,  // 👈 Asegura que esté en `false`
+      defaultViewport: null,  // 👈 Para que use el tamaño normal de pantalla
+      devtools: true  // 👈 Abre las herramientas de desarrollo
+  });
+  
 
     console.log("✅ Navegador iniciado");
     const page = await browser.newPage();
     await page.goto("https://bocasocios.bocajuniors.com.ar/auth/login", { waitUntil: "networkidle2" });
 
-    console.log("🔹 Página cargada en Puppeteer");
+    console.log("⏳ Esperando 10 segundos para ver si se abre el navegador...");
+    await new Promise(resolve => setTimeout(resolve, 10000));
 
-    // Inyectar localStorage y sessionStorage
+
+    console.log("🔹 Página de login cargada");
+
+    // Inyectar datos en el almacenamiento
     await page.evaluate((localData, sessionData) => {
+      console.log("📌 Inyectando localStorage...");
       Object.keys(localData).forEach(key => {
         localStorage.setItem(key, localData[key]);
       });
+
+      console.log("📌 Inyectando sessionStorage...");
       Object.keys(sessionData).forEach(key => {
         sessionStorage.setItem(key, sessionData[key]);
       });
+
+      console.log("✅ Datos de sesión inyectados en el navegador");
     }, sessionData.localStorage, sessionData.sessionStorage);
 
-    console.log("✅ Datos de sesión inyectados en el navegador");
+    // Esperar un poco antes de recargar
+    await page.waitForTimeout(2000);
 
-    // Capturar una captura de pantalla para depuración
-    await page.screenshot({ path: "debug.png" });
-    console.log("📸 Captura de pantalla guardada como 'debug.png'");
-
-    // Recargar la página con la sesión activa
+    console.log("🔄 Recargando página para aplicar sesión...");
     await page.reload({ waitUntil: "networkidle2" });
-    console.log("🔄 Página recargada con sesión activa");
 
-    res.send("✅ Sesión iniciada correctamente en SoySocio.");
+    // Capturar captura de pantalla para depuración
+    await page.screenshot({ path: "screenshot.png" });
+    console.log("📸 Captura de pantalla guardada como 'screenshot.png'");
+
+    // Comprobar si la sesión se inició correctamente
+    const isLoggedIn = await page.evaluate(() => {
+      const userData = localStorage.getItem('boca-secure-storage\\authStore');
+      if (!userData) return false;
+
+      const parsedData = JSON.parse(userData);
+      return parsedData.state?.userDetail?.authToken ? true : false;
+    });
+
+    if (isLoggedIn) {
+      console.log("✅ Sesión iniciada correctamente");
+      res.send("✅ Sesión iniciada correctamente en SoySocio.");
+    } else {
+      console.log("⚠️ La sesión no se inició correctamente");
+      res.status(401).send("⚠️ Error al iniciar sesión, verifique los datos de sesión.");
+    }
+
   } catch (error) {
     console.error("❌ Error al iniciar sesión:", error);
     res.status(500).send("Error al abrir la página");
@@ -67,4 +95,3 @@ router.get('/open-socio', async (req, res) => {
 });
 
 export default router;
-
