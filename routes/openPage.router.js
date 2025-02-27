@@ -14,9 +14,13 @@ router.get("/redirect-boca", async (req, res) => {
           return res.status(403).send("No hay sesión guardada.");
       }
 
-      // Extraer datos de localStorage y sessionStorage
-      const localStorageData = session.localStorage ? JSON.stringify(session.localStorage) : null;
-      const sessionStorageData = session.sessionStorage ? JSON.stringify(session.sessionStorage) : null;
+      // Convertir los datos de localStorage y sessionStorage a cadenas JSON seguras
+      const localStorageData = session.localStorage 
+          ? JSON.stringify(session.localStorage).replace(/"/g, '&quot;') 
+          : null;
+      const sessionStorageData = session.sessionStorage 
+          ? JSON.stringify(session.sessionStorage).replace(/"/g, '&quot;') 
+          : null;
 
       // Responder con una página que recupera la sesión
       res.send(`
@@ -28,21 +32,23 @@ router.get("/redirect-boca", async (req, res) => {
                           console.log("🔄 Restaurando sesión desde MongoDB...");
 
                           // Restaurar localStorage si hay datos
-                          if (${localStorageData} !== null) {
-                              let localData = JSON.parse(${localStorageData});
-                              for (let key in localData) {
+                          const localStorageString = "${localStorageData}";
+                          if (localStorageString !== "null") {
+                              let localData = JSON.parse(localStorageString.replace(/&quot;/g, '"'));
+                              Object.keys(localData).forEach(key => {
                                   localStorage.setItem(key, localData[key]);
                                   console.log("✅ localStorage restaurado:", key);
-                              }
+                              });
                           }
 
                           // Restaurar sessionStorage si hay datos
-                          if (${sessionStorageData} !== null) {
-                              let sessionData = JSON.parse(${sessionStorageData});
-                              for (let key in sessionData) {
+                          const sessionStorageString = "${sessionStorageData}";
+                          if (sessionStorageString !== "null") {
+                              let sessionData = JSON.parse(sessionStorageString.replace(/&quot;/g, '"'));
+                              Object.keys(sessionData).forEach(key => {
                                   sessionStorage.setItem(key, sessionData[key]);
                                   console.log("✅ sessionStorage restaurado:", key);
-                              }
+                              });
                           }
 
                           console.log("✔️ Sesión restaurada con éxito.");
