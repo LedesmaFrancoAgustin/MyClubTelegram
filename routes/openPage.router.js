@@ -1,4 +1,5 @@
 import express from "express";
+import fetch from "node-fetch";
 import SessionCookie from "../models/sessionCookies.model.js";
 
 const router = express.Router();
@@ -11,59 +12,34 @@ router.get("/redirect-boca", async (req, res) => {
             return res.status(403).send("No hay sesión guardada.");
         }
 
-        // Restaurar cookies en las cabeceras HTTP
-        if (session.cookies && Array.isArray(session.cookies)) {
-            session.cookies.forEach(cookie => {
-                res.cookie(cookie.name, cookie.value, {
-                    domain: cookie.domain,
-                    path: cookie.path,
-                    secure: cookie.secure,
-                    httpOnly: false, // IMPORTANTE: Si `true`, solo el servidor las podrá leer
-                    sameSite: cookie.sameSite || "Lax",
-                    expires: new Date(cookie.expiry * 1000),
-                });
-            });
+        const authToken = session.localStorage["boca-secure-storage\\authStore"]
+            ? JSON.parse(session.localStorage["boca-secure-storage\\authStore"]).state.userDetail.authToken
+            : null;
+
+        if (!authToken) {
+            return res.status(403).send("No hay token guardado.");
         }
 
-        res.send(`
-            <html>
-            <head>
-                <script>
-                    (function restoreSession() {
-                        try {
-                            console.log("🔄 Restaurando sesión...");
-                            
-                            // Restaurar localStorage
-                            const localStorageData = ${JSON.stringify(session.localStorage)};
-                            Object.keys(localStorageData).forEach(key => {
-                                localStorage.setItem(key, localStorageData[key]);
-                            });
-                            console.log("✅ localStorage restaurado.");
+        console.log("🔄 Iniciando sesión desde el backend...");
 
-                            // Restaurar sessionStorage
-                            const sessionStorageData = ${JSON.stringify(session.sessionStorage)};
-                            Object.keys(sessionStorageData).forEach(key => {
-                                sessionStorage.setItem(key, sessionStorageData[key]);
-                            });
-                            console.log("✅ sessionStorage restaurado.");
+        const response = await fetch("https://bocasocios.bocajuniors.com.ar/api/auth", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${authToken}`
+            }
+        });
 
-                            console.log("✔️ Sesión restaurada. Redirigiendo...");
-                            setTimeout(() => {
-                                window.location.href = "https://bocasocios.bocajuniors.com.ar/auth/login";
-                            }, 2000);
-                        } catch (error) {
-                            console.error("❌ Error restaurando sesión:", error);
-                        }
-                    })();
-                </script>
-            </head>
-            <body>
-                <h3>Restaurando sesión... Espere un momento...</h3>
-            </body>
-            </html>
-        `);
+        if (!response.ok) {
+            throw new Error("⚠️ No se pudo autenticar.");
+        }
+
+        console.log("✅ Autenticación exitosa. Redirigiendo...");
+
+        res.redirect("https://bocasocios.bocajuniors.com.ar/auth/login");
+
     } catch (error) {
-        console.error("Error en /redirect-boca:", error);
+        console.error("❌ Error en /redirect-boca:", error);
         res.status(500).send("Error interno del servidor.");
     }
 });
