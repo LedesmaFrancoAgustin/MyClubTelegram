@@ -6,19 +6,16 @@ const router = express.Router();
 
 router.get("/redirect-boca", async (req, res) => {
     try {
-        // Buscar la sesión en MongoDB
         const session = await SessionCookie.findOne({ email: "ledesma-agustin@hotmail.com" });
 
         if (!session) {
             return res.status(403).send("No hay sesión guardada.");
         }
 
-        // Convertir datos a JSON seguro
         const localStorageData = session.localStorage ? JSON.stringify(session.localStorage) : "{}";
         const sessionStorageData = session.sessionStorage ? JSON.stringify(session.sessionStorage) : "{}";
         const cookiesData = Array.isArray(session.cookies) ? JSON.stringify(session.cookies) : "[]";
 
-        // Responder con una página que ejecuta el script de restauración
         res.send(`
             <html>
             <head>
