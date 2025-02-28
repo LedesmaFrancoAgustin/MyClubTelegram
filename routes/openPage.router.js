@@ -1,5 +1,4 @@
 import express from "express";
-import axios from "axios";
 import SessionCookie from "../models/sessionCookies.model.js"; // Modelo de MongoDB
 
 const router = express.Router();
@@ -13,54 +12,40 @@ router.get("/redirect-boca", async (req, res) => {
             return res.status(403).send("No hay sesión guardada.");
         }
 
+        // Verificar que session.cookies sea un array
+        const cookiesData = Array.isArray(session.cookies) ? session.cookies : [];
+
         // Convertir datos a JSON seguro
         const localStorageData = session.localStorage ? JSON.stringify(session.localStorage) : null;
         const sessionStorageData = session.sessionStorage ? JSON.stringify(session.sessionStorage) : null;
-        
-        // Asegurar que las cookies sean un array válido
-        const cookiesData = Array.isArray(session.cookies) ? session.cookies : [];
 
-        // Construir la cadena de cookies para la petición HTTP
-        const cookieHeader = cookiesData.length > 0 
-            ? cookiesData.map(({ name, value }) => `${name}=${value}`).join("; ") 
-            : "";
-
-        // Hacer la petición desde el servidor a BocaSocios (con cookies)
-        const response = await axios.get("https://bocasocios.bocajuniors.com.ar/auth/login", {
-            headers: {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
-                "Cookie": cookieHeader
-            }
-        });
-
-        // Responder con una página que carga la sesión y redirige al usuario
+        // Responder con una página que recupera la sesión
         res.send(`
             <html>
             <head>
                 <script>
                     (function restoreSession() {
                         try {
-                            console.log("🔄 Restaurando sesión desde MongoDB...");
+                            console.log("🔄 Restaurando sesión...");
 
                             const localStorageData = ${localStorageData};
                             if (localStorageData) {
                                 Object.keys(localStorageData).forEach(key => {
                                     localStorage.setItem(key, localStorageData[key]);
-                                    console.log("✅ localStorage restaurado:", key);
                                 });
+                                console.log("✅ localStorage restaurado.");
                             }
 
                             const sessionStorageData = ${sessionStorageData};
                             if (sessionStorageData) {
                                 Object.keys(sessionStorageData).forEach(key => {
                                     sessionStorage.setItem(key, sessionStorageData[key]);
-                                    console.log("✅ sessionStorage restaurado:", key);
                                 });
+                                console.log("✅ sessionStorage restaurado.");
                             }
 
-                            console.log("✔️ Sesión restaurada con éxito.");
+                            console.log("✔️ Sesión restaurada. Redirigiendo...");
                             setTimeout(() => {
-                                console.log("➡️ Redirigiendo a BocaSocios...");
                                 window.location.href = "https://bocasocios.bocajuniors.com.ar/auth/login";
                             }, 2000);
                         } catch (error) {
@@ -70,7 +55,7 @@ router.get("/redirect-boca", async (req, res) => {
                 </script>
             </head>
             <body>
-                <h3>Redirigiendo a BocaSocios...</h3>
+                <h3>Restaurando sesión... Espere un momento...</h3>
             </body>
             </html>
         `);
