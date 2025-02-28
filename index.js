@@ -7,7 +7,6 @@ import { startCommand } from "./commands/startCommands.js";
 import { callbackHandler } from "./handlers/callbackHandlers.js";
 import { registerScene, loginScene } from "./handlers/accessHandlers.js"; // Ajusta la ru
 import { initMongoDB } from "./db.js"; // Conexión a MongoDB
-import path from "path";
 
 import openPageRouter from "./routes/openPage.router.js";
 
@@ -36,15 +35,7 @@ initMongoDB();
 
 bot.telegram.setWebhook(WEBHOOK_URL);
 app.use(bot.webhookCallback("/"));
-
-const __dirname = path.resolve();
-app.use(express.static(path.join(__dirname, "public")));
 app.use("/api", openPageRouter);
-
-app.get("/js/restoreSession.js", (req, res) => {
-  res.sendFile(path.join(__dirname, "public/js/restoreSession.js"));
-});
-
 
 app.listen(PORT, () => {
   //console.log(`Bot corriendo en puerto ${PORT}`);

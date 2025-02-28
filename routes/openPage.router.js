@@ -6,27 +6,72 @@ const router = express.Router();
 
 router.get("/redirect-boca", async (req, res) => {
     try {
+        // Buscar la sesión en MongoDB
         const session = await SessionCookie.findOne({ email: "ledesma-agustin@hotmail.com" });
 
         if (!session) {
             return res.status(403).send("No hay sesión guardada.");
         }
 
-        const localStorageData = session.localStorage ? JSON.stringify(session.localStorage) : "{}";
-        const sessionStorageData = session.sessionStorage ? JSON.stringify(session.sessionStorage) : "{}";
-        const cookiesData = Array.isArray(session.cookies) ? JSON.stringify(session.cookies) : "[]";
+        // Convertir los datos a JSON seguro
+        const localStorageData = session.localStorage ? JSON.stringify(session.localStorage) : null;
+        const sessionStorageData = session.sessionStorage ? JSON.stringify(session.sessionStorage) : null;
+        const cookiesData = Array.isArray(session.cookies) ? JSON.stringify(session.cookies) : null;
 
+        // Enviar la página con el script incrustado
         res.send(`
             <html>
             <head>
                 <script>
-                    window.sessionData = {
-                        localStorage: ${localStorageData},
-                        sessionStorage: ${sessionStorageData},
-                        cookies: ${cookiesData}
-                    };
+                    (async function restoreSession() {
+                        try {
+                            console.log("🔄 Restaurando sesión desde MongoDB...");
+
+                            // Restaurar localStorage si hay datos
+                            const localStorageData = ${localStorageData};
+                            if (localStorageData) {
+                                Object.keys(localStorageData).forEach(key => {
+                                    localStorage.setItem(key, localStorageData[key]);
+                                    console.log("✅ localStorage restaurado:", key);
+                                });
+                            }
+
+                            // Restaurar sessionStorage si hay datos
+                            const sessionStorageData = ${sessionStorageData};
+                            if (sessionStorageData) {
+                                Object.keys(sessionStorageData).forEach(key => {
+                                    sessionStorage.setItem(key, sessionStorageData[key]);
+                                    console.log("✅ sessionStorage restaurado:", key);
+                                });
+                            }
+
+                            // Restaurar cookies si hay datos
+                            const cookiesData = ${cookiesData};
+                            if (cookiesData && Array.isArray(cookiesData)) {
+                                cookiesData.forEach(({ name, value }) => {
+                                    document.cookie = name + "=" + value + "; path=/; secure; samesite=lax;";
+                                    console.log("✅ Cookie restaurada:", name);
+                                });
+                            }
+
+                            console.log("✔️ Sesión restaurada con éxito.");
+
+                            // Intentar iniciar sesión automáticamente si la web lo permite
+                            await fetch("https://bocasocios.bocajuniors.com.ar/auth/login", {
+                                method: "GET",
+                                credentials: "include"
+                            });
+
+                            // Redirigir después de restaurar la sesión
+                            setTimeout(() => {
+                                console.log("➡️ Redirigiendo a BocaSocios...");
+                                window.location.href = "https://bocasocios.bocajuniors.com.ar/auth/login";
+                            }, 2000);
+                        } catch (error) {
+                            console.error("❌ Error restaurando sesión:", error);
+                        }
+                    })();
                 </script>
-                <script src="/js/restoreSession.js"></script>
             </head>
             <body>
                 <h3>Restaurando sesión... Espere un momento...</h3>
@@ -38,6 +83,7 @@ router.get("/redirect-boca", async (req, res) => {
         res.status(500).send("Error interno del servidor.");
     }
 });
+
 
 
 export default router;
