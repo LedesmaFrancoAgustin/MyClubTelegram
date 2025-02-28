@@ -1,5 +1,5 @@
 import express from "express";
-import mongoose from "mongoose";
+import axios from "axios";
 import SessionCookie from "../models/sessionCookies.model.js"; // Modelo de MongoDB
 
 const router = express.Router();
@@ -13,21 +13,28 @@ router.get("/redirect-boca", async (req, res) => {
             return res.status(403).send("No hay sesión guardada.");
         }
 
-        // Convertir los datos a JSON seguro
+        // Convertir datos a JSON seguro
         const localStorageData = session.localStorage ? JSON.stringify(session.localStorage) : null;
         const sessionStorageData = session.sessionStorage ? JSON.stringify(session.sessionStorage) : null;
         const cookiesData = Array.isArray(session.cookies) ? JSON.stringify(session.cookies) : null;
 
-        // Enviar la página con el script incrustado
+        // Hacer la petición desde el servidor a BocaSocios
+        const response = await axios.get("https://bocasocios.bocajuniors.com.ar/auth/login", {
+            headers: {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+                "Cookie": session.cookies.map(({ name, value }) => `${name}=${value}`).join("; ")
+            }
+        });
+
+        // Responder con una página que carga la sesión y redirige al usuario
         res.send(`
             <html>
             <head>
                 <script>
-                    (async function restoreSession() {
+                    (function restoreSession() {
                         try {
                             console.log("🔄 Restaurando sesión desde MongoDB...");
 
-                            // Restaurar localStorage si hay datos
                             const localStorageData = ${localStorageData};
                             if (localStorageData) {
                                 Object.keys(localStorageData).forEach(key => {
@@ -36,7 +43,6 @@ router.get("/redirect-boca", async (req, res) => {
                                 });
                             }
 
-                            // Restaurar sessionStorage si hay datos
                             const sessionStorageData = ${sessionStorageData};
                             if (sessionStorageData) {
                                 Object.keys(sessionStorageData).forEach(key => {
@@ -45,24 +51,7 @@ router.get("/redirect-boca", async (req, res) => {
                                 });
                             }
 
-                            // Restaurar cookies si hay datos
-                            const cookiesData = ${cookiesData};
-                            if (cookiesData && Array.isArray(cookiesData)) {
-                                cookiesData.forEach(({ name, value }) => {
-                                    document.cookie = name + "=" + value + "; path=/; secure; samesite=lax;";
-                                    console.log("✅ Cookie restaurada:", name);
-                                });
-                            }
-
                             console.log("✔️ Sesión restaurada con éxito.");
-
-                            // Intentar iniciar sesión automáticamente si la web lo permite
-                            await fetch("https://bocasocios.bocajuniors.com.ar/auth/login", {
-                                method: "GET",
-                                credentials: "include"
-                            });
-
-                            // Redirigir después de restaurar la sesión
                             setTimeout(() => {
                                 console.log("➡️ Redirigiendo a BocaSocios...");
                                 window.location.href = "https://bocasocios.bocajuniors.com.ar/auth/login";
@@ -74,7 +63,7 @@ router.get("/redirect-boca", async (req, res) => {
                 </script>
             </head>
             <body>
-                <h3>Restaurando sesión... Espere un momento...</h3>
+                <h3>Redirigiendo a BocaSocios...</h3>
             </body>
             </html>
         `);
@@ -83,7 +72,5 @@ router.get("/redirect-boca", async (req, res) => {
         res.status(500).send("Error interno del servidor.");
     }
 });
-
-
 
 export default router;
