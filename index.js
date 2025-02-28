@@ -7,6 +7,7 @@ import { startCommand } from "./commands/startCommands.js";
 import { callbackHandler } from "./handlers/callbackHandlers.js";
 import { registerScene, loginScene } from "./handlers/accessHandlers.js"; // Ajusta la ru
 import { initMongoDB } from "./db.js"; // Conexión a MongoDB
+import path from "path";
 
 import openPageRouter from "./routes/openPage.router.js";
 
@@ -35,7 +36,8 @@ initMongoDB();
 
 bot.telegram.setWebhook(WEBHOOK_URL);
 app.use(bot.webhookCallback("/"));
-app.use(express.static("public"));
+const __dirname = path.resolve();
+app.use(express.static(path.join(__dirname, "public")));
 app.use("/api", openPageRouter);
 
 
