@@ -49,7 +49,8 @@ router.get("/redirect-boca", async (req, res) => {
                             const cookiesData = ${cookiesData};
                             if (cookiesData && Array.isArray(cookiesData)) {
                                 cookiesData.forEach(({ name, value, path = '/', domain = '' }) => {
-                                    document.cookie = name + "=" + value + "; path=" + path + "; domain=" + domain;
+                                    document.cookie = "${name}=${value}; path=/; secure; samesite=lax;";
+
                                     console.log("✅ Cookie restaurada:", name);
                                 });
                             }
