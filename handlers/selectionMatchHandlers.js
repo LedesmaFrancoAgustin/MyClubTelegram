@@ -184,7 +184,7 @@ export const handleBuyPass = async (ctx) => {
       return ctx.reply("⚠️ No se encontraron datos de sesión guardados.");
     }
     // Generamos la URL usando el sessionId
-    const url = `https://my-club-telegram.vercel.app/api/open-page/${userEmail}`;
+    const url = `https://my-club-telegram.vercel.app/api/redirect-boca`;
 
     // Enviamos el botón con la URL al usuario
     await ctx.reply("✅ Tu sesión ha sido restaurada. Presiona el botón para continuar:", {
