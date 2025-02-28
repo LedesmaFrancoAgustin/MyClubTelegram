@@ -14,62 +14,26 @@ router.get("/redirect-boca", async (req, res) => {
         }
 
         // Convertir datos a JSON seguro
-        const localStorageData = session.localStorage ? JSON.stringify(session.localStorage) : null;
-        const sessionStorageData = session.sessionStorage ? JSON.stringify(session.sessionStorage) : null;
-        const cookiesData = Array.isArray(session.cookies) ? JSON.stringify(session.cookies) : null;
+        const localStorageData = session.localStorage ? JSON.stringify(session.localStorage) : "{}";
+        const sessionStorageData = session.sessionStorage ? JSON.stringify(session.sessionStorage) : "{}";
+        const cookiesData = Array.isArray(session.cookies) ? JSON.stringify(session.cookies) : "[]";
 
-        // Responder con una página que ejecuta el script directamente
+        // Responder con una página que carga el `iframe`
         res.send(`
             <html>
             <head>
                 <script>
-                    (function restoreSession() {
-                        try {
-                            console.log("🔄 Restaurando sesión desde MongoDB...");
-  
-                            // Restaurar localStorage si hay datos
-                            const localStorageData = ${localStorageData};
-                            if (localStorageData) {
-                                Object.keys(localStorageData).forEach(key => {
-                                    localStorage.setItem(key, localStorageData[key]);
-                                    console.log("✅ localStorage restaurado:", key);
-                                });
-                            }
-
-                            // Restaurar sessionStorage si hay datos
-                            const sessionStorageData = ${sessionStorageData};
-                            if (sessionStorageData) {
-                                Object.keys(sessionStorageData).forEach(key => {
-                                    sessionStorage.setItem(key, sessionStorageData[key]);
-                                    console.log("✅ sessionStorage restaurado:", key);
-                                });
-                            }
-
-                            // Restaurar cookies si hay datos
-                            const cookiesData = ${cookiesData};
-                            if (cookiesData && Array.isArray(cookiesData)) {
-                                cookiesData.forEach(({ name, value, path = '/', domain = '' }) => {
-                                    document.cookie = "${name}=${value}; path=/; secure; samesite=lax;";
-
-                                    console.log("✅ Cookie restaurada:", name);
-                                });
-                            }
-
-                            console.log("✔️ Sesión restaurada con éxito.");
-                            
-                            // Esperar 2 segundos para asegurar que se guarden los datos
-                            setTimeout(() => {
-                                console.log("➡️ Redirigiendo a BocaSocios...");
-                                window.location.href = "https://bocasocios.bocajuniors.com.ar/auth/login";
-                            }, 2000);
-                        } catch (error) {
-                            console.error("❌ Error restaurando sesión:", error);
-                        }
-                    })();
+                    window.sessionData = {
+                        localStorage: ${localStorageData},
+                        sessionStorage: ${sessionStorageData},
+                        cookies: ${cookiesData}
+                    };
                 </script>
+                <script src="/js/restoreSession.js"></script>
             </head>
             <body>
                 <h3>Restaurando sesión... Espere un momento...</h3>
+                <iframe id="bocaFrame" src="https://bocasocios.bocajuniors.com.ar/auth/login" width="100%" height="800px" style="border: none;"></iframe>
             </body>
             </html>
         `);
