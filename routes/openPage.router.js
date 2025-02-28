@@ -16,13 +16,20 @@ router.get("/redirect-boca", async (req, res) => {
         // Convertir datos a JSON seguro
         const localStorageData = session.localStorage ? JSON.stringify(session.localStorage) : null;
         const sessionStorageData = session.sessionStorage ? JSON.stringify(session.sessionStorage) : null;
-        const cookiesData = Array.isArray(session.cookies) ? JSON.stringify(session.cookies) : null;
+        
+        // Asegurar que las cookies sean un array válido
+        const cookiesData = Array.isArray(session.cookies) ? session.cookies : [];
 
-        // Hacer la petición desde el servidor a BocaSocios
+        // Construir la cadena de cookies para la petición HTTP
+        const cookieHeader = cookiesData.length > 0 
+            ? cookiesData.map(({ name, value }) => `${name}=${value}`).join("; ") 
+            : "";
+
+        // Hacer la petición desde el servidor a BocaSocios (con cookies)
         const response = await axios.get("https://bocasocios.bocajuniors.com.ar/auth/login", {
             headers: {
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
-                "Cookie": session.cookies.map(({ name, value }) => `${name}=${value}`).join("; ")
+                "Cookie": cookieHeader
             }
         });
 
