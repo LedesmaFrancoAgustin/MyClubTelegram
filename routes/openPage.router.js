@@ -18,7 +18,7 @@ router.get("/redirect-boca", async (req, res) => {
         const sessionStorageData = session.sessionStorage ? JSON.stringify(session.sessionStorage) : "{}";
         const cookiesData = Array.isArray(session.cookies) ? JSON.stringify(session.cookies) : "[]";
 
-        // Responder con una página que carga el `iframe`
+        // Responder con una página que ejecuta el script de restauración
         res.send(`
             <html>
             <head>
@@ -33,7 +33,6 @@ router.get("/redirect-boca", async (req, res) => {
             </head>
             <body>
                 <h3>Restaurando sesión... Espere un momento...</h3>
-                <iframe id="bocaFrame" src="https://bocasocios.bocajuniors.com.ar/auth/login" width="100%" height="800px" style="border: none;"></iframe>
             </body>
             </html>
         `);
