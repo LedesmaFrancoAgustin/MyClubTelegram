@@ -11,13 +11,19 @@ router.get("/redirect-boca", async (req, res) => {
             return res.status(403).send("No hay sesión guardada.");
         }
 
-        // Asegurar que las cookies sean un array
-        const cookiesData = Array.isArray(session.cookies) ? session.cookies : [];
-
-        // Serializar datos para que puedan usarse en el navegador
-        const localStorageData = session.localStorage ? JSON.stringify(session.localStorage) : "{}";
-        const sessionStorageData = session.sessionStorage ? JSON.stringify(session.sessionStorage) : "{}";
-        const cookiesJSON = JSON.stringify(cookiesData);
+        // Restaurar cookies en las cabeceras HTTP
+        if (session.cookies && Array.isArray(session.cookies)) {
+            session.cookies.forEach(cookie => {
+                res.cookie(cookie.name, cookie.value, {
+                    domain: cookie.domain,
+                    path: cookie.path,
+                    secure: cookie.secure,
+                    httpOnly: false, // IMPORTANTE: Si `true`, solo el servidor las podrá leer
+                    sameSite: cookie.sameSite || "Lax",
+                    expires: new Date(cookie.expiry * 1000),
+                });
+            });
+        }
 
         res.send(`
             <html>
@@ -26,27 +32,20 @@ router.get("/redirect-boca", async (req, res) => {
                     (function restoreSession() {
                         try {
                             console.log("🔄 Restaurando sesión...");
-
+                            
                             // Restaurar localStorage
-                            const localStorageData = ${localStorageData};
+                            const localStorageData = ${JSON.stringify(session.localStorage)};
                             Object.keys(localStorageData).forEach(key => {
                                 localStorage.setItem(key, localStorageData[key]);
                             });
                             console.log("✅ localStorage restaurado.");
 
                             // Restaurar sessionStorage
-                            const sessionStorageData = ${sessionStorageData};
+                            const sessionStorageData = ${JSON.stringify(session.sessionStorage)};
                             Object.keys(sessionStorageData).forEach(key => {
                                 sessionStorage.setItem(key, sessionStorageData[key]);
                             });
                             console.log("✅ sessionStorage restaurado.");
-
-                            // Restaurar cookies (solo funciona en extensiones o servidores que puedan modificar headers)
-                            const cookies = ${cookiesJSON};
-                            cookies.forEach(cookie => {
-                                document.cookie = cookie.name + "=" + cookie.value + "; path=" + cookie.path + "; domain=" + cookie.domain + ";";
-                            });
-                            console.log("✅ Cookies restauradas.");
 
                             console.log("✔️ Sesión restaurada. Redirigiendo...");
                             setTimeout(() => {
