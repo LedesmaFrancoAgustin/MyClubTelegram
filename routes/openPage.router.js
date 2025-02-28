@@ -39,4 +39,5 @@ router.get("/redirect-boca", async (req, res) => {
     }
 });
 
+
 export default router;

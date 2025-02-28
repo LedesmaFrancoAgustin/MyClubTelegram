@@ -41,6 +41,9 @@ const __dirname = path.resolve();
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/api", openPageRouter);
 
+app.get("/js/restoreSession.js", (req, res) => {
+  res.sendFile(path.join(__dirname, "public/js/restoreSession.js"));
+});
 
 
 app.listen(PORT, () => {
