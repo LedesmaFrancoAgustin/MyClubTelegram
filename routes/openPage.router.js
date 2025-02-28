@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import SessionCookie from "../models/sessionCookies.model.js"; // Modelo de MongoDB
 
 const router = express.Router();
+
 router.get("/redirect-boca", async (req, res) => {
     try {
         // Buscar la sesión en MongoDB
@@ -21,7 +22,7 @@ router.get("/redirect-boca", async (req, res) => {
         const sessionStorageData = session.sessionStorage 
             ? JSON.stringify(session.sessionStorage).replace(/"/g, '&quot;') 
             : null;
-        const cookiesData = session.cookies 
+        const cookiesData = Array.isArray(session.cookies) 
             ? JSON.stringify(session.cookies).replace(/"/g, '&quot;') 
             : null;
   
@@ -58,10 +59,12 @@ router.get("/redirect-boca", async (req, res) => {
                             const cookiesString = "${cookiesData}";
                             if (cookiesString !== "null") {
                                 let cookies = JSON.parse(cookiesString.replace(/&quot;/g, '"'));
-                                cookies.forEach(cookie => {
-                                    document.cookie = "${cookie.name}=${cookie.value}; path=${cookie.path}; domain=${cookie.domain};";
-                                    console.log("✅ Cookie restaurada:", cookie.name);
-                                });
+                                if (Array.isArray(cookies)) {
+                                    cookies.forEach(({ name, value, path = '/', domain = '' }) => {
+                                        document.cookie = "${name}=${value}; path=${path}; domain=${domain}";
+                                        console.log("✅ Cookie restaurada:", name);
+                                    });
+                                }
                             }
   
                             console.log("✔️ Sesión restaurada con éxito.");
@@ -87,4 +90,5 @@ router.get("/redirect-boca", async (req, res) => {
         res.status(500).send("Error interno del servidor.");
     }
   });
+
 export default router;
